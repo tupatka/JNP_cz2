@@ -1,0 +1,1 @@
+g++ -c -O2 -std=c++17 maptel.cc -o maptel.o && gcc -c -O2 -std=c11 maptel_test1.c -o maptel_test1.o && g++ -O2 maptel_test1.o maptel.o -o maptel_test1

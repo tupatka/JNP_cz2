@@ -2,20 +2,21 @@
 #define MAPTEL_H
 
   #define TEL_NUM_MAX_LEN (size_t)22   //! ok?
-  // Tworzy słownik i zwraca liczbę naturalną będącą jego identyfikatorem.
+  
   #ifdef __cplusplus
   extern "C" {
   #endif
-
+	
+	// Tworzy słownik i zwraca liczbę naturalną będącą jego identyfikatorem.
     unsigned long maptel_create(void);
-    /*
+    
       // Usuwa słownik o identyfikatorze id.
       void maptel_delete(unsigned long id);
 
       // Wstawia do słownika o identyfikatorze id informację o zmianie numeru
       // tel_src na numer tel_dst. Nadpisuje ewentualną istniejącą informację.
       void maptel_insert(unsigned long id, char const *tel_src, char const *tel_dst);
-
+	/*
       // Jeśli w słowniku o identyfikatorze id jest informacja o zmianie numeru
       // tel_src, to ją usuwa. W przeciwnym przypadku nic nie robi.
       void maptel_erase(unsigned long id, char const *tel_src);
