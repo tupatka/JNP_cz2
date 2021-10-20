@@ -94,18 +94,17 @@ void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size
 
     auto tel_it = book.find(tel_src);
     if (tel_it == book.end()) { // Nie było zmiany numeru.
-        tel_dst = (char*)malloc(strlen(tel_src + 1));//realloc?
         strcpy(tel_dst, tel_src);
         return;
     }
 
     std::set<std::string> set; // Do szukania powtórzeń numerów.
     auto tel_dst_it = tel_it;
+    
     while (tel_it != book.end()) {
 
         auto tel_curr = tel_it->first;
         if (set.find(tel_curr) != set.end()) { // Mamy cykl.
-            tel_dst = (char*)malloc(strlen(tel_src + 1));//realloc?
             strcpy(tel_dst, tel_src);
             return;
         }
@@ -117,7 +116,8 @@ void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size
 
     }
     //! należy zrobić transformację
-    std::cerr << "Result: " << std::endl;//!uzupełnić
-    //tel_dst = (char*)malloc(strlen(tel_src + 1));
+    strcpy(tel_dst, tel_dst_it->second.c_str());
+    std::cerr << "Result: " << tel_dst << std::endl;//!uzupełnić
+    
     
 }
