@@ -16,7 +16,7 @@
       // Wstawia do słownika o identyfikatorze id informację o zmianie numeru
       // tel_src na numer tel_dst. Nadpisuje ewentualną istniejącą informację.
       void maptel_insert(unsigned long id, char const *tel_src, char const *tel_dst);
-	/*
+	
       // Jeśli w słowniku o identyfikatorze id jest informacja o zmianie numeru
       // tel_src, to ją usuwa. W przeciwnym przypadku nic nie robi.
       void maptel_erase(unsigned long id, char const *tel_src);
@@ -27,7 +27,7 @@
       // numer tel_src. Wartość len to rozmiar przydzielonej pamięci wskazywanej
       // przez tel_dst.
       void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len);
-  */
+  
   #ifdef __cplusplus
   }
   #endif
