@@ -84,21 +84,6 @@ void maptel_erase(unsigned long id, char const *tel_src) {
 	//! zagadka: co z powyższą linijką nie tak? jutro poprawię
 }
 
-bool has_a_cycle(const book_t& book, char const *tel_src) {
-	auto zolw = book.find(tel_src);
-	assert(zolw != book.end()); //! docs zalozenie
-	auto zajac = book.find(zolw->second);
-	bool krok_zolwia = false;
-	while(zajac != book.end() && zajac != zolw) {
-		zajac = book.find(zajac->second);
-		if (krok_zolwia) {
-			zolw = book.find(zolw->second);
-		}
-		krok_zolwia = !krok_zolwia;
-	}
-	return zajac != book.end();
-}
-
 void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len) {
 	//! dodać sprawdzenie, czy istnieje słownik
     
@@ -106,32 +91,37 @@ void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size
 
     book_t book = library[id];//tworzy słownik o nummerze id, potrzebne sprawdzenie czy istnieje
 
-
-    auto tel_it = book.find(tel_src);
-    if (tel_it == book.end()) { // Nie było zmiany numeru.
-        strcpy(tel_dst, tel_src);//być może tel_dst jest za mały
+    auto slow_iter = book.find(tel_src);
+    if (slow_iter == book.end()) { // Nie było zmiany numeru.
+        strcpy(tel_dst, tel_src);//!być może tel_dst nie ma dosyć pamięci
+        std::cerr << "nie było zmiany numeru" << std::endl;
         return;
     }
+    auto fast_iter = book.find(slow_iter->second);
+    auto behind_fast = slow_iter;
+    bool slow_moves = false;
 
-    if (has_a_cycle(book, tel_src)) {
-    	strcpy(tel_dst, tel_src);
-        return;
+    while (fast_iter != book.end() && fast_iter != slow_iter) {
+    	behind_fast = fast_iter;
+    	fast_iter = book.find(fast_iter->second);
+    	if (slow_moves) {
+    		slow_iter = book.find(slow_iter->second);
+    	}
+    	slow_moves = !slow_moves;
     }
 
-    auto tel_dst_it = tel_it;
-    while (tel_it != book.end()) {
-
-        auto tel_curr = tel_it->first;
-
-        auto tel_next = tel_it->second;
-
-        tel_dst_it = tel_it;
-        tel_it = book.find(tel_next);
-
+    if (fast_iter == book.end()) {
+    	/* nie ma cyklu */
+    	strcpy(tel_dst, behind_fast->second.c_str());//!być może tel_dst nie ma dosyć pamięci
+    	//!return;
     }
-    //! należy zrobić transformację
-    strcpy(tel_dst, tel_dst_it->second.c_str());
-    std::cerr << "Result: " << tel_dst << std::endl;//!uzupełnić
-    
+    else {
+    	assert(fast_iter == slow_iter);
+    	/* cykl! */
+    	strcpy(tel_dst, tel_src);//!być może tel_dst nie ma dosyć pamięci
+    	//!return;
+    }
+
+    std::cerr << "Result: " << tel_dst << std::endl;
     
 }
