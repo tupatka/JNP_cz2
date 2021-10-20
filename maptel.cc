@@ -84,33 +84,47 @@ void maptel_erase(unsigned long id, char const *tel_src) {
 	//! zagadka: co z powyższą linijką nie tak? jutro poprawię
 }
 
+bool has_a_cycle(const book_t& book, char const *tel_src) {
+	auto zolw = book.find(tel_src);
+	assert(zolw != book.end()); //! docs zalozenie
+	auto zajac = book.find(zolw->second);
+	bool krok_zolwia = false;
+	while(zajac != book.end() && zajac != zolw) {
+		zajac = book.find(zajac->second);
+		if (krok_zolwia) {
+			zolw = book.find(zolw->second);
+		}
+		krok_zolwia = !krok_zolwia;
+	}
+	return zajac != book.end();
+}
 
 void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len) {
 	//! dodać sprawdzenie, czy istnieje słownik
     
 	std::cerr << "Trying to transform " << tel_src << " using book " << id << std::endl;
 
-    book_t book = library[id];
+    book_t book = library[id];//tworzy słownik o nummerze id, potrzebne sprawdzenie czy istnieje
+
 
     auto tel_it = book.find(tel_src);
     if (tel_it == book.end()) { // Nie było zmiany numeru.
-        strcpy(tel_dst, tel_src);
+        strcpy(tel_dst, tel_src);//być może tel_dst jest za mały
         return;
     }
 
-    std::set<std::string> set; // Do szukania powtórzeń numerów.
+    if (has_a_cycle(book, tel_src)) {
+    	strcpy(tel_dst, tel_src);
+        return;
+    }
+
     auto tel_dst_it = tel_it;
-    
     while (tel_it != book.end()) {
 
         auto tel_curr = tel_it->first;
-        if (set.find(tel_curr) != set.end()) { // Mamy cykl.
-            strcpy(tel_dst, tel_src);
-            return;
-        }
 
         auto tel_next = tel_it->second;
-        set.insert(tel_next);
+
         tel_dst_it = tel_it;
         tel_it = book.find(tel_next);
 
