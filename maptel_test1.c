@@ -30,6 +30,8 @@ int main() {
     sometel = NULL;
     maptel_insert(-1, sometel, sometel);
     maptel_delete(5);
+    maptel_erase(3, "abba");
+    maptel_insert(-1, "", "");
 //!
 
 /*  maptel_transform(id, t112, tel, TEL_NUM_MAX_LEN + 1);
