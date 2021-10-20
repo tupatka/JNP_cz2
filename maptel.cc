@@ -1,8 +1,9 @@
 #include <iostream>
 #include "maptel.h"
 #include <map>
+#include <set>
+#include <cstring>
 #include <string>
-
 using book_t = std::map<std::string, std::string>;//<tel_src, tel_dst>
 using library_t = std::map<long, book_t>;//<id słownika, słownik>
 //id_t = unsigned long //!???
@@ -36,3 +37,42 @@ void maptel_insert(unsigned long id, char const *tel_src, char const *tel_dst) {
 	library[id][tel_src] = tel_dst;
 }
 
+void maptel_erase(unsigned long id, char const *tel_src) {
+    book_t book = library[id];
+
+    auto tel_it = book.find(tel_src);
+    if (tel_it != book.end()) {
+        book.erase(tel_it);
+    }
+}
+
+void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len) {
+    book_t book = library[id];
+
+    auto tel_it = book.find(tel_src);
+    if (tel_it == book.end()) { // Nie było zmiany numeru.
+        // mam nadzieje ze da sie to zrobic ladniej
+        tel_dst = (char*)malloc(strlen(tel_src + 1));
+        strcpy(tel_dst, tel_src);
+        return;
+    }
+
+    std::set<char*> set; // Do szukania powtórzeń numerów.
+    auto tel_dst_it = tel_it;
+    while (tel_it != book.end()) {
+
+        // TO NIE DZIALA I NIE WIEM JAK ZMIENIC
+        char* tel_curr = tel_it->first; // chce zdjac napis z seta, ale moze w sumie by wystarczyl tylko wskaznik a nie gleboka kopia
+        if (set.find(tel_curr) != set.end()) { // Mamy cykl.
+            tel_dst = (char*)malloc(strlen(tel_src + 1));
+            strcpy(tel_dst, tel_src);
+            return;
+        }
+
+        // TO TAK SAMO
+        char* tel_next = tel_it->second;
+        set.insert(tel_next);
+        tel_dst_it = tel_it;
+        tel_it = book.find(tel_next);
+    }
+}
