@@ -37,8 +37,8 @@ int main() {
 
 
   maptel_transform(id, t112, tel, TEL_NUM_MAX_LEN + 1);
-//  assert(strcmp(tel, t997) == 0);
-  /*maptel_transform(id, t333, tel, TEL_NUM_MAX_LEN + 1);
+  assert(strcmp(tel, t997) == 0);
+  maptel_transform(id, t333, tel, TEL_NUM_MAX_LEN + 1);
   assert(strcmp(tel, t333) == 0);
   maptel_erase(id, t333);
   maptel_erase(id, t112);
@@ -50,5 +50,5 @@ int main() {
   maptel_transform(id, t333, tel, TEL_NUM_MAX_LEN + 1);
   assert(strcmp(tel, t333) == 0);
   maptel_delete(id);
-*/
+
 }

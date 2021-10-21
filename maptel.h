@@ -4,6 +4,7 @@
 #ifndef __cplusplus
   #define TEL_NUM_MAX_LEN (size_t)22   //! size_t!
 #endif
+
   #ifdef __cplusplus
   namespace jnp1{
     extern "C" {
