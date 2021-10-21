@@ -1,1 +1,1 @@
-g++ -c -O2 -std=c++17 maptel.cc -o maptel.o && gcc -c -O2 -std=c11 maptel_test1.c -o maptel_test1.o && g++ -O2 maptel_test1.o maptel.o -o maptel_test1
+  g++ -c -Wall -Wextra -O2 -std=c++17 maptel.cc -o maptel.o &&  gcc -c -Wall -Wextra -O2 -std=c11 maptel_test1.c -o maptel_test1.o && g++ -c -Wall -Wextra -O2 -std=c++17 maptel_test2.cc -o maptel_test2.o &&  g++ maptel_test1.o maptel.o -o maptel_test1 && g++ maptel_test2.o maptel.o -o maptel_test21 &&  g++ maptel.o maptel_test2.o -o maptel_test22 
