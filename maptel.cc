@@ -6,12 +6,12 @@
 #include <set>
 #include <cstring>
 #include <sstream>
-//#include <cstdlib>
+
 constexpr bool debug = true;
 
 namespace jnp1 {
-	using book_t = std::unordered_map<std::string, std::string>;//<tel_src, tel_dst>
-    using library_t = std::unordered_map<long, book_t>;//<id słownika, słownik>
+	using book_t = std::unordered_map<std::string, std::string>; // <tel_src, tel_dst>
+    using library_t = std::unordered_map<long, book_t>; // <id słownika, słownik>
 
     library_t& get_library() {
     	static library_t library;
@@ -75,10 +75,10 @@ namespace jnp1 {
 		debug_msg("maptel_delete: deleted");
     }
 
-/**
- * Wypisuje zawartość wszystkich słowników
- * Nie udostępniona użytkownikom
- */	//!anonimowy namespace? static? usunąć?
+	/**
+	 * Wypisuje zawartość wszystkich słowników
+	 * Nie udostępniona użytkownikom
+	 */	//!anonimowy namespace? static? usunąć? można udostępnić?
     void diag() {
     	static library_t& library = get_library();
         if (debug) {
@@ -94,9 +94,13 @@ namespace jnp1 {
     }
 
     /**
+     * Zwraca odpowiedź na pytanie:
+     * czy napis wskazywany przez tel jest pooprawynm numerem telefonu?
+     * Pusty napis uznaje a poprawny numer telefonu.
+     * 
      * Zakłada, że wskaźnik nie jest nullem
      */
-    //! też: static, anonimowa lub zwykła namespace?
+    //! static, anonimowa lub zwykła namespace? czekamy na decyzję, czy można to udostępnić
     bool correct_tel_num(char const* tel) {
     	assert(tel != NULL);
     	for (unsigned short i = 0; i < TEL_NUM_MAX_LEN; ++i) {
@@ -172,8 +176,10 @@ namespace jnp1 {
 
 
 	namespace {
-		//transform utils
-		
+	//transform utils
+
+		//! sprawdzać założenia aserrcjami? <-- dotyczy to kilku funkcji
+
 		/**
 		 * Zakłada, że tel_src, res - poprawne numery, dst_buf != NULL, buf_len > 0,
 		 * res_len jest długością res (strlen)
@@ -198,7 +204,8 @@ namespace jnp1 {
 		 */
 		void transform_result_is_src(char const *tel_src, char *dst_buf, size_t len) {
 			if (len > strlen(tel_src)) {
-				memmove(dst_buf, tel_src, strlen(tel_src + 1));
+				memmove(dst_buf, tel_src, strlen(tel_src) + 1);
+				assert(strcmp(dst_buf, tel_src) == 0);
 				debug_msg((std::string)"maptel_transform: " + tel_src + " -> " + tel_src);
 			}
 			else {
@@ -211,6 +218,7 @@ namespace jnp1 {
 		/**
 		 * 	Zakłada, że tel_src - poprawny nr tel, tel_dst != NULL, len > 0
 		 *	Transformuje numer na podstawie przekazanej książki.
+		 * 	Wypisuje komunikaty zarówno o sukcesie, jak i o problemach
 		 */
 		void transform_helper(book_t book, char const *tel_src, char *tel_dst, size_t len) {
 			//poszukiwanie cyklu "żółwiem i zającem" - jeśli zając dogoni żółwia, to oznacza cykl
@@ -240,20 +248,23 @@ namespace jnp1 {
 		    	/* nie ma cyklu */
 		    	transform_copy_util(tel_src, behind_fast->second.c_str(), tel_dst,
 		    									behind_fast->second.length(), len);
+		    	return;
 		    }
 		    else {
 		    	assert(fast_iter == slow_iter);
 		    	/* cykl! */
 		    	transform_result_is_src(tel_src, tel_dst, len);
+		    	return;
 		    }
 		}
 
 
 		/**
-		 * Sprawdza wszystko, poza tym, co możemy sprawdzić dopiero 
-		 * po znalezieniu wyniku (tj. czy len bajtów wystarczy)
-		 * a więc: czy wskaźniki nie są nullami, tel_src jest poprawnym numerem, len > 0 (z góry wiemy, że potrzeba),
-		 * wreszcie czy istnieje słownik o danym id
+		 * Sprawdza wszystko poza tym,
+		 * co możemy sprawdzić dopiero po znalezieniu wyniku (tj. czy len bajtów wystarczy)
+		 *
+		 * a więc: czy wskaźniki nie są nullami, tel_src jest poprawnym numerem, len > 0
+		 * (z góry wiemy, że potrzeba), wreszcie czy istnieje słownik o danym id
 		 * 
 		 * w debugu wypisuje komunikaty, m.in. w odpowiedniej sytuacji wypisuje "maptel_transform(argumenty)"
 		 */
@@ -269,7 +280,7 @@ namespace jnp1 {
 				return false;
 			}
 
-			/* parametry poprawne, można wypisywać (tel_dst jako wskaźnik!) */
+			/* parametry poprawne, można wypisywać (tel_dst jako wskaźnik, nie jako napis!) */
 
 			debug_msg("maptel_transform(" + S(id) + ", " + tel_src + ", " + S(tel_dst) + ", " + S(len) + ")");//S(len)//!(void*)
 
