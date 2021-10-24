@@ -2,17 +2,17 @@
 #define MAPTEL_H
 
 #ifndef __cplusplus
-  #define TEL_NUM_MAX_LEN (size_t)22   //! size_t!
+  #define TEL_NUM_MAX_LEN (size_t)22
 #endif
 
-  #ifdef __cplusplus
-  namespace jnp1{
+#ifdef __cplusplus
+  namespace jnp1 {
     extern "C" {
-    const size_t TEL_NUM_MAX_LEN = 22;   //! size_t!
-  #endif
+      constexpr size_t TEL_NUM_MAX_LEN = 22;
+#endif
 
-// Tworzy słownik i zwraca liczbę naturalną będącą jego identyfikatorem.
-    unsigned long maptel_create(void);
+      // Tworzy słownik i zwraca liczbę naturalną będącą jego identyfikatorem.
+      unsigned long maptel_create(void);
     
       // Usuwa słownik o identyfikatorze id.
       void maptel_delete(unsigned long id);
@@ -32,9 +32,9 @@
       // przez tel_dst.
       void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len);
   
-  #ifdef __cplusplus
+#ifdef __cplusplus
+    }
   }
-}
-  #endif
+#endif
 
 #endif /* MAPTEL_H */
