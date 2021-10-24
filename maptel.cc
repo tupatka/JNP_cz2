@@ -6,11 +6,18 @@
 #include <set>
 #include <cstring>
 //#include <cstdlib>
-constexpr bool debug = true;
+#include <ctype.h> // isdigit()
+
+#ifdef NDEBUG
+const bool debug = false;
+#else
+const bool debug = true;
+#endif
+// zamiast: constexpr bool debug = true;
 
 namespace jnp1 {
-	using book_t = std::unordered_map<std::string, std::string>;//<tel_src, tel_dst>
-    using library_t = std::unordered_map<long, book_t>;//<id słownika, słownik>
+	using book_t = std::unordered_map<std::string, std::string>; // <tel_src, tel_dst>
+    using library_t = std::unordered_map<long, book_t>; // <id słownika, słownik>
 	//using id_t = unsigned long //!?
 
     library_t& get_library() {
@@ -22,7 +29,7 @@ namespace jnp1 {
 /*
 pytania
 	-czy usunięcie nieistniejącego słownika to błąd?taktaktak
-	-co ze stwarzaniem istniejącego? ????
+	-co ze stwarzaniem istniejącego? ????  - dalam ze to blad
 
     -przy debug==true komunikaty wszelkie
 
@@ -31,22 +38,50 @@ pytania
 
     unsigned long maptel_create(void) {
         static unsigned long id = 0;
-        static library_t& library = get_library();
-        assert(id != (unsigned long)-1);
-        //!spr czy książka już nie istniała
+        static library_t &library = get_library();
+
+        //! Nie wiem czy tak jest ladnie, jesli nie to moge
+        //! pozamieniac zeby moze w assert byly te teksty do wypisania
+
         if (debug) {
-        	std::cerr << "creating book no " << id << std::endl;
+            std::cerr << "maptel: maptel.create(): ";
         }
-        library[id];//teraz para (id, pusty_slownik) jest w mapie (library)
+        if (id == (unsigned long) -1) {
+            if (debug) {
+                std::cerr << "Too many books in library.\n ";
+                assert(id != (unsigned long) -1);
+            }
+            return 0; //! nieokreslone zachowanie??
+        }
+        if (library.find(id) != library.end()) {
+            if (debug) {
+                std::cerr << "Book with given id already exists.\n ";
+                assert(library.find(id) == library.end());
+            }
+            return 0;
+        }
+        if (debug) {
+            std::cerr << "creating book no " << id << std::endl;
+        }
+        library[id]; // teraz para (id, pusty_slownik) jest w mapie (library)
         ++id;
         return id - 1;
     }
 
     void maptel_delete(unsigned long id) {
     	static library_t& library = get_library();
-        //!komunikat normalnie
-        if (library.find(id) == library.end()) {//!Err
-            std::cerr << "deleting non existing book no " << id << std::endl;
+        if (debug) {
+            std::cerr << "maptel: maptel.delete(" << id << "): ";
+        }     
+        if (library.find(id) == library.end()) {
+            if(debug) {
+                std::cerr << "deleting non existing book no " << id << std::endl;
+                assert(library.find(id) != library.end());
+            }
+            return;            
+        }
+        if(debug) {
+            std::cerr << "deleting book no " << id << std::endl;
         }
         library.erase(id);
     }
@@ -77,28 +112,107 @@ pytania
             diag();
             return;
         }
-
-        //!Uwaga: dodać sprawdzenie danych
-
-        std::cerr << "inserting into " << id << ": " << tel_src << " -> " << tel_dst << std::endl;
-        if (library.find(id) == library.end()) {//!Err
-            std::cerr << "inserting into non existing book " << id << std::endl;
+        if (debug) {
+            std::cerr << "maptel: maptel.insert(" << id << ", " << tel_src << ", " << tel_dst << "): ";
+        }        
+        if (library.find(id) == library.end()) {
+            if(debug) {
+                std::cerr << "inserting into non existing book " << id << std::endl;
+                assert(library.find(id) != library.end());
+            }
+            return;
         }
-        library[id][tel_src] = tel_dst;    //działa nawet jeśli słownik library[id] nie istnieje
-        //po prostu go tworzy i umieszcza tam tel_src jako klucz
+        if (tel_src == NULL) {
+            if(debug) {
+                std::cerr << "inserting empty telephone number " << std::endl;
+                assert(tel_src != NULL);
+            }
+            return;
+        }
+        if (strlen(tel_src) > TEL_NUM_MAX_LEN) {
+            if(debug) {
+                std::cerr << "telephone number is too long " << std::endl;
+                assert(strlen(tel_src) <= TEL_NUM_MAX_LEN);
+            }
+            return;
+        }
+        for (const char* it = tel_src; *it; ++it) {
+            if(!isdigit(*it)) {
+                if(debug) {
+                    std::cerr << "incorrect telephone number character " << *it << std::endl;
+                    assert(isdigit(*it));
+                }
+                return;
+            }
+            //! nie wiem jak sprawdzic czy konczy sie \0
+        }
+        if (tel_dst == NULL) {
+            if(debug) {
+                std::cerr << "inserting empty telephone number " << std::endl;
+                assert(tel_dst != NULL);
+            }
+            return;
+        }
+        if (strlen(tel_dst) > TEL_NUM_MAX_LEN) { //! dokladnie tyle czy +1?
+            if(debug) {
+                std::cerr << "telephone number is too long " << std::endl;
+                assert(strlen(tel_dst) <= TEL_NUM_MAX_LEN);
+            }
+            return;
+        }
+        for (const char* it = tel_dst; *it; ++it) {
+            if(!isdigit(*it)) {
+                if(debug) {
+                    std::cerr << "incorrect telephone number character " << *it << std::endl;
+                    assert(isdigit(*it));
+                }
+                return;
+            }
+            //! nie wiem jak sprawdzic czy konczy sie \0
+        }
+        if(debug) {
+            std::cerr << "inserted into " << id << ": " << tel_src << " -> " << tel_dst << std::endl;
+        }
+        //!Uwaga: dodać sprawdzenie danych -> tyle ok czy cos jeszcze trzeba sprawdzac?
+
+        library[id][tel_src] = tel_dst;
     }
   
   void maptel_erase(unsigned long id, char const *tel_src) {
-  	static library_t& library = get_library();
-    std::cerr << "Erasing tel_src " << tel_src << " from book " << id << std::endl;
-    library[id].erase(tel_src);//!spr.czy na pewno istnieje lib[id]
-	}
+      static library_t &library = get_library();
+      if (debug) {
+          std::cerr << "maptel: maptel.erase(" << id << ", " << tel_src << "): ";
+      }
+      if (library.find(id) == library.end()) {
+          if (debug) {
+              std::cerr << "erasing from non existing book no " << id << std::endl;
+              assert(library.find(id) != library.end());
+          }
+          return;
+      }
+
+          //! Czy tu sprawdzamy poprawnosc napisu czy tylko czy istnieje?
+
+      if (library[id].find(tel_src) == library[id].end()) {
+          if(debug) {
+              std::cerr << "telephone number not in book " << id << std::endl;
+              assert(library[id].find(tel_src) != library[id].end());
+          }
+          return;
+      }
+      
+      if(debug) {
+          std::cerr << "Erasing tel_src " << tel_src << " from book " << id << std::endl;
+      }
+
+      library[id].erase(tel_src);
+  }
 
 	void maptel_transform(unsigned long id, char const *tel_src, char *tel_dst, size_t len) {
 		static library_t& library = get_library();
 		
 		if (debug) {
-			std::cerr << "Trying to transform " << tel_src << " using book " << id << std::endl;
+			std::cerr << "maptel: maptel_transform( " << id << ", " <<  tel_src << ", " << tel_dst << ") " << std::endl;
 		}
 
 		if (!library.count(id)) {
