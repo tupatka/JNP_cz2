@@ -1,5 +1,5 @@
-#include <iostream>
 #include "maptel.h"
+#include <iostream>
 #include <unordered_map>
 #include <string>
 #include <cassert>
@@ -83,8 +83,7 @@ namespace jnp1 {
 
 	/**
 	 * Zwraca odpowiedź na pytanie:
-	 * czy napis wskazywany przez tel jest pooprawynm numerem telefonu?
-	 * Pusty napis uznaje a poprawny numer telefonu.
+	 * czy napis wskazywany przez tel jest poprawynm numerem telefonu?
 	 * 
 	 * Zakłada, że wskaźnik nie jest nullem
 	 */
@@ -92,7 +91,7 @@ namespace jnp1 {
 		assert(tel != NULL);
 		for (unsigned short i = 0; i < TEL_NUM_MAX_LEN; ++i) {
 			if (tel[i] == '\0') {
-				return true;
+				return i != 0;	//pusty napis nie jest poprawnym numerem telefonu
 			}
 			else if (!isdigit(tel[i])) {
 				return false;

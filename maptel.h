@@ -2,10 +2,13 @@
 #define MAPTEL_H
 
 #ifndef __cplusplus
+  #include <stddef.h>
   #define TEL_NUM_MAX_LEN (size_t)22
 #endif
 
 #ifdef __cplusplus
+  #include <cstddef>
+  #include <iostream>
   namespace jnp1 {
     extern "C" {
       constexpr size_t TEL_NUM_MAX_LEN = 22;
