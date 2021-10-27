@@ -31,12 +31,10 @@ namespace jnp1 {
 		}
 		
 		//Skróty zamieniające na std::string
+
+		/** zamienia unsigned long (również size_t) na odpowiedni napis */
 		inline std::string S(unsigned long id) {
 			return std::to_string(id);
-		}
-
-		inline std::string S(size_t len) {
-			return std::to_string(len);
 		}
 
 		/** zamienia wskaźnik na string (jak %p, nie %s – np. "0x00ac1310") */
