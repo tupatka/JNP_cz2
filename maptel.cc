@@ -72,7 +72,8 @@ namespace jnp1 {
 	  	debug_msg("maptel_delete(" + S(id) + ")");
 
 		if (!library.count(id)) {
-			debug_msg("maptel_delete: there is no book with id = " + S(id));
+			debug_msg("maptel_delete: ERROR: there is no book with id = " + S(id));
+			assert(library.count(id));
 			return;
 		}
 		
@@ -81,41 +82,45 @@ namespace jnp1 {
 		debug_msg("maptel_delete: deleted");
 	}
 
-	/**
-	 * Zwraca odpowiedź na pytanie:
-	 * czy napis wskazywany przez tel jest poprawynm numerem telefonu?
-	 * 
-	 * Zakłada, że wskaźnik nie jest nullem
-	 */
-	static bool correct_tel_num(char const* tel) {
-		assert(tel != NULL);
-		for (unsigned short i = 0; i < TEL_NUM_MAX_LEN; ++i) {
-			if (tel[i] == '\0') {
-				return i != 0;	//pusty napis nie jest poprawnym numerem telefonu
+	namespace {
+		/**
+		 * Zwraca odpowiedź na pytanie:
+		 * czy napis wskazywany przez tel jest poprawynm numerem telefonu?
+		 * 
+		 * Zakłada, że wskaźnik nie jest nullem
+		 */
+		bool correct_tel_num(char const* tel) {
+			assert(tel != NULL);
+			for (unsigned short i = 0; i < TEL_NUM_MAX_LEN; ++i) {
+				if (tel[i] == '\0') {
+					return i != 0;	//pusty napis nie jest poprawnym numerem telefonu
+				}
+				else if (!isdigit(tel[i])) {
+					return false;
+				}
 			}
-			else if (!isdigit(tel[i])) {
+			/* tel[0]..tel[TEL_NUM_MAX_LEN - 1] to cyfry */
+			if (tel[TEL_NUM_MAX_LEN] != '\0') {
 				return false;
 			}
+			else {
+				return true;
+			}
 		}
-		/* tel[0]..tel[TEL_NUM_MAX_LEN - 1] to cyfry */
-		if (tel[TEL_NUM_MAX_LEN] != '\0') {
-			return false;
-		}
-		else {
-			return true;
-		}
-	}
+	}	/* namespace */
 
 	void maptel_insert(unsigned long id, char const* tel_src, char const* tel_dst) {
 		static library_t& library = get_library();
 
 		if (tel_src == NULL || tel_dst == NULL) {
-			debug_msg("maptel_insert(): invalid argument: NULL");
+			debug_msg("maptel_insert(): ERROR: invalid argument: NULL");
+			assert(tel_src != NULL && tel_dst != NULL);
 			return;
 		}
 
 		if (!correct_tel_num(tel_src) || !correct_tel_num(tel_dst)){
-			debug_msg("maptel_insert(): invalid argument: not valid tel number");
+			debug_msg("maptel_insert(): ERROR: invalid argument: not a valid tel number");
+			assert(correct_tel_num(tel_src) && correct_tel_num(tel_dst));
 			return;
 		}
 
@@ -124,7 +129,8 @@ namespace jnp1 {
 		debug_msg("maptel_insert(" + S(id) + ", " + tel_src + ", " + tel_dst + ")");
 
 		if (!library.count(id)) {
-			debug_msg("maptel_insert: no book with such id found");
+			debug_msg("maptel_insert: ERROR: no book with such id found");
+			assert(library.count(id));
 			return;
 		}
 
@@ -137,12 +143,14 @@ namespace jnp1 {
 	  	static library_t& library = get_library();
 		
 	  	if (tel_src == NULL) {
-	  		debug_msg("maptel_erase(): invalid argument: NULL");
+	  		debug_msg("maptel_erase(): ERROR: invalid argument: NULL");
+			assert(tel_src != NULL);
 	  		return;
 	  	}
 
 	  	if (!correct_tel_num(tel_src)) {
-	  		debug_msg("maptel_erase(): invalid argument: not a valid tel number");
+	  		debug_msg("maptel_erase(): ERROR: invalid argument: not a valid tel number");
+			assert(correct_tel_num(tel_src));
 	  		return;
 	  	}
 
@@ -151,7 +159,8 @@ namespace jnp1 {
 	  	debug_msg("maptel_erase(" + S(id) + ", " + tel_src + ")");
 
 		if (!library.count(id)) {
-			debug_msg("maptel_erase: no book with such id found");
+			debug_msg("maptel_erase: ERROR: no book with such id found");
+			assert(library.count(id));
 			return;
 		}
 
@@ -162,7 +171,8 @@ namespace jnp1 {
 
 
 	namespace {
-	//transform utils
+		//transform utils
+		//patrz: maptel_transform();
 
 		/**
 		 * Zakłada, że tel_src, res - poprawne numery, dst_buf != NULL, buf_len > 0,
@@ -175,8 +185,10 @@ namespace jnp1 {
 				debug_msg((std::string)"maptel_transform: " + tel_src + " -> " + res);
 			}
 			else {
-				debug_msg((std::string)"maptel_transform: result " + res
-									+ " won't fit in " + S(buf_len) + "bytes");
+				debug_msg((std::string)"maptel_transform: ERROR: "
+					+ "result " + res + " won't fit in " + S(buf_len) + " bytes");
+				assert(buf_len > res_len);
+				
 				assert(buf_len > 0);
 				*dst_buf = '\0';
 			}
@@ -193,8 +205,10 @@ namespace jnp1 {
 				debug_msg((std::string)"maptel_transform: " + tel_src + " -> " + tel_src);
 			}
 			else {
-				debug_msg((std::string)"maptel_transform: result " + tel_src
-									+ " won't fit in " + S(len) + "bytes");
+				debug_msg((std::string)"maptel_transform: ERROR: "
+					+ "result " + tel_src + " won't fit in " + S(len) + " bytes");
+				assert(len > strlen(tel_src));
+
 				assert(len > 0);
 				*dst_buf = '\0';
 			}
@@ -205,7 +219,7 @@ namespace jnp1 {
 		 *	Transformuje numer na podstawie przekazanej książki.
 		 * 	Wypisuje komunikaty zarówno o sukcesie, jak i o problemach
 		 */
-		void transform_helper(book_t book, char const *tel_src, char *tel_dst, size_t len) {
+		void transform_helper(const book_t& book, char const *tel_src, char *tel_dst, size_t len) {
 			assert(tel_src != NULL && tel_dst != NULL && len > 0);
 
 			//poszukiwanie cyklu "żółwiem i zającem" - jeśli zając dogoni żółwia, to oznacza cykl
@@ -257,12 +271,14 @@ namespace jnp1 {
 		bool transform_valid_args(const library_t& library, unsigned long id, char const *tel_src, char *tel_dst, size_t len) {
 			if (tel_src == NULL || tel_dst == NULL) {
 				//tel_dst == NULL oznacza, że wynik się nie zmieści
-				debug_msg("maptel_transform(): invalid argument: NULL");
+				debug_msg("maptel_transform(): ERROR: invalid argument: NULL");
+				assert(tel_src != NULL && tel_dst != NULL);
 				return false;
 			}
 
 			if (!correct_tel_num(tel_src)) {
-				debug_msg("maptel_transform(): invalid argument: not a valid tel number");
+				debug_msg("maptel_transform(): ERROR: invalid argument: not a valid tel number");
+				assert(correct_tel_num(tel_src));
 				return false;
 			}
 
@@ -271,12 +287,14 @@ namespace jnp1 {
 			debug_msg("maptel_transform(" + S(id) + ", " + tel_src + ", " + S(tel_dst) + ", " + S(len) + ")");
 
 			if (!library.count(id)) {
-				debug_msg("maptel_transform: no book with such id found");
+				debug_msg("maptel_transform: ERROR: no book with such id found");
+				assert(library.count(id));
 				return false;
 			}
 
 			if (len == 0) {
-				debug_msg("maptel_transform: 0 bytes can't contain any possible result!");
+				debug_msg("maptel_transform: ERROR: 0 bytes can't contain any possible result!");
+				assert(len > 0);
 				return false;
 			}
 			assert(len > 0);
@@ -292,5 +310,5 @@ namespace jnp1 {
 		if (valid_arguments) {
 			transform_helper(library[id], tel_src, tel_dst, len);
 		}
-	}   
+	}
 }
